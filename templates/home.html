@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>IA Project</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  </head>
+  <body>
+    <nav class="navbar">
+      <h3 class="title">🚆 Station recommender 🚆</h3>
+    </nav>
+    <div class="container">
+      <div style="margin: 0 auto; width: 40%; height: 250px;">
+
+        <form action="http://localhost:8000/result" method="post" enctype="multipart/form-data">
+        
+          <textarea id="textarea" name="textarea" style="width: 100%; height: 100%;" class="textBox"
+          placeholder="Describe your depart and arrival destination">
+            {% if transcript != "" %}
+              {{ transcript }}
+            {% endif %}
+          </textarea>
+  
+          <div class="btns">
+            
+  
+            <form action="http://localhost:8000/sttMic" method="post" enctype="multipart/form-data">
+                <button type="submit" id="submitButton" name="btnEnvoiForm" title="Envoyer">
+                  <img class="btnMic" src="https://static.vecteezy.com/system/resources/previews/002/798/703/non_2x/microphone-icon-flat-design-illustration-free-vector.jpg" 
+                  alt="">
+                </button>
+            </form>
+  
+            <div id="speechContainer">
+              <form action="http://localhost:8000/sttFile" method="post" enctype="multipart/form-data">
+                  <input type="file" name="file"/>
+                  <br>
+                  <input type="submit" id="submitButton" value="Charger"/>
+              </form>
+            </div>
+  
+            <button type="submit" class="btn">Valider</button>
+            </button>
+          </div>
+
+        </form>
+
+
+      </div>
+    </div>
+  </body>
+</html>
