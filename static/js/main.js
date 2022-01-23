@@ -26,3 +26,14 @@ function calculateAndDisplayRoute(directionsService, directionsRenderer) {
         })
         .catch((e) => window.alert("Directions request failed due to " + status));
 }
+
+function onMic() {
+    document.getElementById("sendMic").style.display = 'none';
+    document.getElementById("pendingMic").style.display = 'block';
+}
+
+function submitFile() {
+    document.getElementById("sendUpload").style.display = 'none';
+    document.getElementById("pendingUpload").style.display = 'block';
+    document.getElementById("uploadForm").submit();
+}
