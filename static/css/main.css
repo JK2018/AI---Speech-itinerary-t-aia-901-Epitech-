@@ -129,11 +129,40 @@ input[type="file"] {
     color: rgb(255, 43, 43);
 }
 
+#route {
+    width: 60vw;
+    padding: 30px 50px;
+    margin: auto;
+    color: #0e294e;
+}
+
+#route-list li {
+    margin-bottom: 20px;
+}
+
+#route-list li::marker {
+    font-size: 1.3rem;
+}
+
+#route-list li.main {
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin: 30px 0;
+}
+
+#route-list li.second {
+    color: #8a96a8;
+}
+
+#route-list li.second {
+    font-weight: 600;
+}
+
 #map {
-    margin: 100px auto 0 auto;
+    margin: 30px auto 100px auto;
     height: 75vh;
     width: calc(60vw + 100px);
-    border-radius: 10px 10px 0 0;
+    border-radius: 10px;
 }
 
 @keyframes rotation {

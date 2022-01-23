@@ -3,47 +3,58 @@
 
 <head>
   <title>IA Project</title>
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}"/>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 
 <body>
-  <nav class="navbar">
-    <h3 class="title">🚆 Station recommender 🚆</h3>
-  </nav>
-  <div class="container">
-    <div style="margin: 0 auto; width: 40%; height: 250px;">
-      <form action="http://localhost:8000/result" method="post" enctype="multipart/form-data">
-        <textarea id="textarea" name="textarea" style="width: 100%; height: 100%;" class="textBox"
-          placeholder="Describe your depart and arrival destination">
-            {% if transcript != "" %}
-              {{ transcript }}
-            {% endif %}
-          </textarea>
-        <div class="btns">
-          <form action="http://localhost:8000/sttMic" method="post" enctype="multipart/form-data">
-            <button type="submit" id="submitButton" name="btnEnvoiForm" title="Envoyer">
-              <img class="btnMic"
-                src="https://static.vecteezy.com/system/resources/previews/002/798/703/non_2x/microphone-icon-flat-design-illustration-free-vector.jpg"
-                alt="">
-            </button>
-          </form>
-          <div id="speechContainer">
-            <form action="http://localhost:8000/sttFile" method="post" enctype="multipart/form-data">
-              <input type="file" name="file" />
-              <br>
-              <input type="submit" id="submitButton" value="Charger" />
-            </form>
-          </div>
-          <button type="submit" class="btn">Valider</button>
-          </button>
-        </div>
+  <div class="banner">
+    <h1 class="title">Le chemin le plus court vers votre destination.</h1>
+  </div>
+  <div class="forms">
+    <form class="form-group" action="http://localhost:8000/result" method="post" enctype="multipart/form-data">
+      <input type="text" class="main-input" name="doc" placeholder="Où allez-vous ?">
+      <button class="submit-btn" type="submit">Trouver un trajet</button>
+    </form>
+    <div class="error">
+      {% if error != "" %}{{error}}{% endif %}
+    </div>
+    <div class="loader">
+      <form id="micForm" action="http://localhost:8000/sttMic" method="post" enctype="multipart/form-data">
+        <button type="submit" class="secondary-btn" id="sendMic" onclick="onMic()">
+          <img
+            src="{{ url_for('static', filename='img/voice.png') }}"
+            alt="">
+        </button>
+        <button type="button" class="secondary-btn" id="pendingMic">
+          <img
+            src="{{ url_for('static', filename='img/loading.png') }}"
+            alt="">
+        </button>
+      </form>
+      <form id="uploadForm" action="http://localhost:8000/sttFile" method="post" enctype="multipart/form-data">
+        <label class="secondary-btn" for="file-input" id="sendUpload">
+          <img src="{{ url_for('static', filename='img/upload.png') }}"/>
+        </label>
+        <input type="file" name="file" id="file-input" onchange="submitFile()"/>
+        <button type="button" class="secondary-btn" id="pendingUpload">
+          <img
+            src="{{ url_for('static', filename='img/loading.png') }}"
+            alt="">
+        </button>
       </form>
     </div>
+  </div>
+  <div id="route">
+    <ul id="route-list"></ul>
   </div>
   <div id="map"></div>
   <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvKDJSw5Jskof9Aqs7vL4HmrmrwWLusVc&callback=initMap&v=weekly" async></script>
+  <script>
+    const route = '{{transcript}}';
+  </script>
 </body>
 
 </html>
