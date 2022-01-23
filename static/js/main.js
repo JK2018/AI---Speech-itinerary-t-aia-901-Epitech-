@@ -6,6 +6,7 @@ function initMap() {
             center: { lat: 46.6315, lng: 2.4571 },
             zoomControl: false,
             gestureHandling: "none",
+            streetViewControl: false
         });
 
         directionsRenderer.setMap(map);
