@@ -1,7 +1,9 @@
-import json 
+import simplejson as json
 from flask import Flask, render_template, request
 import speech_recognition as sr
 from nlp_service import process_input
+from path_finding import process_path_finding
+from spam_filter import process_spam_filter
 
 # Init Flask App
 app = Flask(__name__)
@@ -16,6 +18,8 @@ def sttFile():
     transcript = ""
     if request.method == "POST":
         print("File transalation request")
+        print(request)
+        print(request.files)
 
         if "file" not in request.files:
             return render_template('home.html', error="Aucun fichier n'a été envoyé.")
@@ -67,11 +71,10 @@ def result():
 
 
 def process_render(doc):
-    # cities = process_input(doc)
-    route = [
-        {'city': 'Toulouse', 'station': 'Gare de Toulouse Matabiau', 'lat': 43.61146412, 'lng': 1.45355763},
-        {'city': 'Bordeaux', 'station': 'Gare de Bordeaux-St-Jean', 'lat': 44.82653979, 'lng': -0.55619406},
-        {'city': 'Nantes', 'station': 'Gare de Nantes', 'lat': 47.21750472, 'lng': -1.54192517},
-        {'city': 'Paris', 'station': 'Gare de Paris-Montparnasse', 'lat': 48.84062983, 'lng': 2.31989439},
-    ]
-    return render_template('home.html', transcript=json.dumps(route))
+    if (process_spam_filter(doc)):
+        return {"error": "La recherche n'est pas valide."}
+
+    cities = process_input(doc)
+    route = process_path_finding(cities[0], cities[1])
+
+    return json.dumps(route)

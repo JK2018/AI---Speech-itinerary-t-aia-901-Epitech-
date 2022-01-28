@@ -1,4 +1,4 @@
-function initMap() {
+function initMap(route) {
     if (route) {
         const directionsService = new google.maps.DirectionsService();
         const directionsRenderer = new google.maps.DirectionsRenderer();
@@ -10,13 +10,11 @@ function initMap() {
         });
 
         directionsRenderer.setMap(map);
-        calculateAndDisplayRoute(directionsService, directionsRenderer, formatPythonArray(route));
+        calculateAndDisplayRoute(directionsService, directionsRenderer, route);
     }
 }
 
 function calculateAndDisplayRoute(directionsService, directionsRenderer, route) {
-    route = route.route.length ? route.route : {};
-
     if (route.length) {
         createRouteList(route);
 
@@ -33,8 +31,8 @@ function calculateAndDisplayRoute(directionsService, directionsRenderer, route) 
 
         directionsService
             .route({
-                origin: route[0],
-                destination: route[route.length - 1],
+                origin: new google.maps.LatLng(route[0]['lat'], route[0]['lng']),
+                destination: new google.maps.LatLng(route[route.length - 1]['lat'], route[route.length - 1]['lng']),
                 waypoints: waypoints,
                 travelMode: travelMode,
                 transitOptions: transitOptions,
@@ -47,31 +45,33 @@ function calculateAndDisplayRoute(directionsService, directionsRenderer, route) 
 }
 
 function onMic() {
-    document.getElementById("sendMic").style.display = 'none';
-    document.getElementById("pendingMic").style.display = 'block';
+    $("#sendMic").css("display", "none");
+    $("#pendingMic").css("display", "block");
 }
 
 function submitFile() {
-    document.getElementById("sendUpload").style.display = 'none';
-    document.getElementById("pendingUpload").style.display = 'block';
-    document.getElementById("uploadForm").submit();
+    $("#sendUpload").css("display", "none");
+    $("#pendingUpload").css("display", "block");
+    $("#upload-form").submit();
 }
 
-function formatPythonArray(json) {
-    var object = '{"route": [' + json.substring(1);
-    object = object.substring(0, object.length - 1) + ']}';
-    object = object.replaceAll('&#34;', '"');
-    return JSON.parse(object);
+function resetPage() {
+    $("#sendMic").css("display", "block");
+    $("#pendingMic").css("display", "none");
+    $("#sendUpload").css("display", "flex");
+    $("#pendingUpload").css("display", "none");
+
+    $("#route-list li").remove();
 }
 
 function createRouteList(route) {
     for (var i = 0; i < route.length; i++) {
         const mainStation = (i == 0 || i == route.length - 1)
-        addRouteOnList(route[i]["station"], route[i]["city"], mainStation);
+        addRouteOnList(route[i]["station"], mainStation);
     }
 }
 
-function addRouteOnList(station, city, mainStation) {
+function addRouteOnList(station, mainStation) {
     var ul = document.getElementById("route-list");
     var li = document.createElement("li");
 
@@ -81,6 +81,71 @@ function addRouteOnList(station, city, mainStation) {
         li.classList.add("second");
     }
 
-    li.appendChild(document.createTextNode(station + ", " + city));
+    li.appendChild(document.createTextNode(station));
     ul.appendChild(li);
 }
+
+function submitHandler(form, actionUrl) {
+    $.ajax({
+        type: "POST",
+        url: actionUrl,
+        data: form.serialize(),
+        success: function(data) {
+            data = JSON.parse(data);
+            resetPage();
+            initMap(data[0]);
+        }
+    });
+}
+
+function submitFileHandler(form, actionUrl) {
+    var formData = new FormData();
+    var files = $("#upload-form input[name='file']")[0].files;
+    
+    // Check file selected or not
+    if(files.length > 0 ){
+        formData.append('file',files[0]);
+    }
+
+    $.ajax({
+        type: "POST",
+        url: actionUrl,
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(data) {
+            data = JSON.parse(data);
+            resetPage();
+            initMap(data[0]);
+        }
+    });
+}
+
+$(document).ready(function() {
+    // When search form is submited
+    $("#search-form").submit(function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var actionUrl = form.attr('action');
+
+        submitHandler(form, actionUrl);
+    });
+
+    // When mic form is submited
+    $("#mic-form").submit(function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var actionUrl = form.attr('action');
+
+        submitHandler(form, actionUrl);
+    });
+
+    // When upload form is submited
+    $("#upload-form").submit(function(e) {
+        e.preventDefault();
+        var form = $(this);
+        var actionUrl = form.attr('action');
+
+        submitFileHandler(form, actionUrl);
+    });
+});

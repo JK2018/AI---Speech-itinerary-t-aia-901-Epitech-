@@ -10,21 +10,19 @@ from graph import Graph
 
 client = pymongo.MongoClient("mongodb+srv://admin:admin@clusteria.tvj6u.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client['iadb']
-collection3 = db['stopNames']
 collection4 = db['graphSegments']
+collection5 = db['stopCoords']
 
-cursor = collection3.find({})
-fields = ['stop_name','stop_lat','stop_lon']
-stopNamesList = pd.DataFrame(list(cursor), columns = fields)
-
+cursor = collection5.find({})
+fields = ['stop_name','stop_lat','stop_lon','city']
+stopCoords = pd.DataFrame(list(cursor), columns = fields)
 
 def checkCity(city):
     ar = []
     city = city.lower()
     city = city.replace("-", " ")
     city = city.replace("saint", "st")
-    for index, row in stopNamesList.iterrows():
-        print(row.values)
+    for index, row in stopCoords.iterrows():
         if (("gare de "+city) in (row['stop_name'].replace("-", " ")).lower()):
             if row['stop_name'] not in ar:
                 ar.append(row['stop_name'])
@@ -38,7 +36,7 @@ def dijsktra(graph, initial, end):
     current_node = initial
     visited = set()
     weight = 99999999
-    
+
     while current_node != end:
         visited.add(current_node)
         destinations = graph.edges[current_node]
@@ -71,6 +69,20 @@ def dijsktra(graph, initial, end):
     return (path, weight)
 
 
+def formatResults(resList):
+    stopCoords.head(10)
+    path = []
+    for res in resList:
+        rowStation = stopCoords.loc[stopCoords['stop_name'] == res].values[0]
+        path.append({
+            'city': rowStation[3],
+            'station': rowStation[0],
+            'lat': rowStation[1],
+            'lng': rowStation[2]
+        })
+    return path
+
+
 def process_path_finding(departure, arrival):
     theList = []
     for doc in collection4.find():
@@ -79,12 +91,6 @@ def process_path_finding(departure, arrival):
 
     departureList = checkCity(departure)
     arrivalList = checkCity(arrival)
-
-    print("possible departure stops : ")
-    print(departureList)
-    print(" ")
-    print("possible arrival stops : ")
-    print(arrivalList)
 
     graph = Graph()
     for edge in theList:
@@ -104,5 +110,9 @@ def process_path_finding(departure, arrival):
 
     time = (resList[-1]/3600)
     timeInHours = "%dh%02d" % (int(time), (time*60) % 60)
-    ressultPath = (resList[0], "Durée du voyage : "+timeInHours)
+
+    # Format results
+    formattedList = formatResults(resList[0])
+
+    ressultPath = (formattedList, "Durée du voyage : "+timeInHours)
     return ressultPath
