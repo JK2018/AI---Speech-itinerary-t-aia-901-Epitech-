@@ -8,6 +8,8 @@
 pip install notebook
 pip install numpy
 pip install pandas
+pip install matplotlib
+pip install scikit-learn
 pip install pymongo
 pip install langdetect
 pip install nltk
