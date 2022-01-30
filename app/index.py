@@ -1,16 +1,17 @@
+import os
 import simplejson as json
 from flask import Flask, render_template, request
 import speech_recognition as sr
 from nlp_service import process_input
 from path_finding import process_path_finding
-from spam_filter import process_spam_filter
+from spam_filter import process_spam_filter, checkOtherRequest
 
 # Init Flask App
 app = Flask(__name__)
 
 @app.route("/")
 def homepage():
-    return render_template('home.html')
+    return render_template('home.html', google_api_key=os.environ.get('GOOGLE_API_KEY'))
 
 
 @app.route("/sttFile",methods=["GET", "POST"])
@@ -75,8 +76,12 @@ def result():
 
 
 def process_render(doc, spam_filter_status):
-    if (doc == "" or (spam_filter_status and process_spam_filter(doc))):
+    if (doc == ""):
         return json.dumps({"error": "La recherche n'est pas valide."})
+
+    if((spam_filter_status and process_spam_filter(doc))):
+        spam_error_message = checkOtherRequest(doc)
+        return json.dumps({"error": spam_error_message})
 
     cities = process_input(doc)
     if not cities:

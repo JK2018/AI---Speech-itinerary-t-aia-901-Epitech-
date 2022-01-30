@@ -160,3 +160,25 @@ def process_spam_filter(message):
                #result = 'Equal proabilities, have a human classify this!'
 
     return result == 'spam'
+
+
+def checkOtherRequest(message):
+    sleepList = ['chambre','hotel','hôtel','nuit','lit','lits','nuits','chambres']
+    eatList = ['manger', 'table', 'restaurant', 'dinner', 'repas', 'boire', 'verre']
+    showList = ['spectacle', 'musée', 'théatre', 'concert', 'ciné', 'cinéma', 'film']
+    transportList = ['avion', 'vol', 'bateau', 'croisière','bus','autobus','autocar','automobile']
+
+    if( any(substring in message for substring in sleepList) ):
+        return "Nous ne pouvons donner suite à votre demande, veuillez vous orienter vers Booking.com ou Expedia.com."
+
+    elif( any(substring in message for substring in eatList) ):
+        return "Nous ne pouvons donner suite à votre demande, veuillez vous orienter vers Lafourchette.com."
+
+    elif( any(substring in message for substring in showList) ):
+        return "Nous ne pouvons donner suite à votre demande, veuillez vous orienter vers BilletReduc.com ou TicketMaster.com."
+
+    elif( any(substring in message for substring in transportList) ):
+        return "A notre grand regret, nous ne proposons pas d'itinéraires pour ce mode de transport."
+
+    else:
+        return "Nous ne pouvons malheureusement pas traiter votre demande. Si vous souhaitez connaitre un itinéraire, merci de bien vouloir essayer à nouveau en reformulant votre demande."
