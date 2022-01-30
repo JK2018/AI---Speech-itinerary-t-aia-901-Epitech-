@@ -1,5 +1,10 @@
 # T-IAI-901-MSC2022 - GROUP 18
 
+## Gestion de projet
+Notre travail a été organisé et réparti dans un Trello.
+
+https://trello.com/b/X3s2fpPJ/ia-projet
+
 ## Installer les dépendances du projet
 
 ### Dépendances obligatoires pour les Jupyter Notebook

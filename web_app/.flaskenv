@@ -1,5 +1,0 @@
-FLASK_APP=index.py
-FLASK_RUN_HOST=localhost
-FLASK_RUN_PORT=8000
-FLASK_ENV=development
-GOOGLE_API_KEY=AIzaSyAvKDJSw5Jskof9Aqs7vL4HmrmrwWLusVc
