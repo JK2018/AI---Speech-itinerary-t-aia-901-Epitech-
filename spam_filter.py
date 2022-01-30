@@ -14,7 +14,7 @@ import spacy
 from spacy.lang.fr.examples import sentences 
 from spacy import displacy
 
-nlp = spacy.load("fr_core_news_sm")
+nlp2 = spacy.load("fr_core_news_sm")
 
 client = pymongo.MongoClient("mongodb+srv://admin:admin@clusteria.tvj6u.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client['iadb']
@@ -36,7 +36,7 @@ cityList = pd.DataFrame(list(cursor), columns = fields)
 
 
 def process_spam_filter(message):
-     
+
     """
     IN : model params, user input
     OUT : model s prediction (ham / spam)
@@ -45,7 +45,7 @@ def process_spam_filter(message):
           also checks for FR lang, and number of cities in the input
           Used for predicting user input.
     """
-    
+
     def detect_lang(text):
         """
         IN: string
@@ -55,17 +55,15 @@ def process_spam_filter(message):
         result = langdetect.detect_langs(text)
         lang = str(result[0])[:2]
         return lang
-    
-    
-    
-    
+
+
     def check_two_cities(message, cityList):
         """
         IN: string, list of cities extracted from our stop_names
         OUT: int
         USE: returns number of cities from the string that correspond to a stop_name
         """
-        doc = nlp(message) #lower
+        doc = nlp2(message) #lower
 
         def saveAllCitiesInArray():
             cities = []
@@ -75,7 +73,7 @@ def process_spam_filter(message):
         cityArr = saveAllCitiesInArray()
 
         def checkCity(city):
-            city = city.lower()
+            # city = city.lower()
             city = city.replace("-", " ")
             city = city.replace("saint", "st")
             result = 0
@@ -96,8 +94,6 @@ def process_spam_filter(message):
         return (nbCitiesConfirmed)
 
 
-    
-    
     def preprocess_string(string):
         """
         IN : user input
@@ -106,7 +102,7 @@ def process_spam_filter(message):
               remove trailing and double spaces
         """
         # set all to lowercase
-        string = string.lower()
+        # string = string.lower()
         # remove punct
         string = string.replace('[^\w\s]',' ')
         # remove stop words
@@ -116,62 +112,51 @@ def process_spam_filter(message):
         string = string.replace('  ',' ')
         # strip spaces
         string = string.strip()
-        return string    
-    
+        return string
+
     result = ""
-    is_spam = True
     # check cities
     nb_of_cities = check_two_cities(message, cityList)
-   
+
     # check lang
     lang = detect_lang(message)
-    
+
     message = message.replace(',','')
     message = message.replace('-','')
     message = message.replace(' -','')
     message = message.replace(' /','')
     message = re.sub('\W', ' ', message)
     message = preprocess_string(message)
-    
-    
+
     message2 = ""
-    doc = nlp(message)
+    doc = nlp2(message)
     for token in doc:
         message2 = message2+ " "+token.lemma_
 
     if lang != 'fr' and len(doc) > 3:
         result = 'spam'
-        is_spam = True
     else:
         if nb_of_cities < 2:
             result = 'spam'
-            is_spam = True
         else:
-            
-            
+
             message2 = message2.lower().split()
-            
-            #print(message)
             p_spam_given_message = p_spam
             p_ham_given_message = p_ham
-            
-            
 
             for word in message2:
-               if word in parameters_spam:
-                  p_spam_given_message *= parameters_spam[word]
+                if word in parameters_spam:
+                    p_spam_given_message *= parameters_spam[word]
 
-               if word in parameters_ham: 
-                  p_ham_given_message *= parameters_ham[word]
+                if word in parameters_ham: 
+                    p_ham_given_message *= parameters_ham[word]
 
             if p_ham_given_message > p_spam_given_message:
-               result = 'ham'
-               is_spam = False
+                result = 'ham'
             elif p_ham_given_message < p_spam_given_message:
-               result = 'spam'
-               is_spam = True
+                result = 'spam'
             else:
                 result = 'ham'
-                is_spam = False
                #result = 'Equal proabilities, have a human classify this!'
-    return is_spam
+
+    return result == 'spam'

@@ -10,6 +10,7 @@ def process_input(input):
     
     if (len(predictions) == 0):
         print('Prediction: []')
+        return None
         
     for prediction in predictions:
         print('Prediction : {0} -> {1}'.format(prediction['start'], prediction['finish']))

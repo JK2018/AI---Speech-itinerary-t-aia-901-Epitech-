@@ -11,21 +11,23 @@ from graph import Graph
 client = pymongo.MongoClient("mongodb+srv://admin:admin@clusteria.tvj6u.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client['iadb']
 collection4 = db['graphSegments']
-collection5 = db['stopCoords']
+collection5 = db['stopCoords2']
 
 cursor = collection5.find({})
-fields = ['stop_name','stop_lat','stop_lon','city']
+fields = ['stop_name','stop_lat','stop_lon','commune']
 stopCoords = pd.DataFrame(list(cursor), columns = fields)
 
 def checkCity(city):
-    ar = []
     city = city.lower()
     city = city.replace("-", " ")
     city = city.replace("saint", "st")
-    for index, row in stopCoords.iterrows():
-        if (("gare de "+city) in (row['stop_name'].replace("-", " ")).lower()):
-            if row['stop_name'] not in ar:
-                ar.append(row['stop_name'])
+    stopCoords['commune'] = stopCoords['commune'].str.replace("-", " ")
+    stopCoords['commune'] = stopCoords['commune'].str.lower()
+
+    ar = stopCoords.loc[stopCoords['commune'] == city]['stop_name'].values
+    if (len(ar) == 0):
+        ar = stopCoords.loc[stopCoords['commune'].str.contains(city, case=False)]['stop_name'].values
+
     return ar
 
 
@@ -73,13 +75,15 @@ def formatResults(resList):
     stopCoords.head(10)
     path = []
     for res in resList:
-        rowStation = stopCoords.loc[stopCoords['stop_name'] == res].values[0]
-        path.append({
-            'city': rowStation[3],
-            'station': rowStation[0],
-            'lat': rowStation[1],
-            'lng': rowStation[2]
-        })
+        rowStation = stopCoords.loc[stopCoords['stop_name'].str.contains(res, case=False)]
+        if (len(rowStation.values) > 0):
+            rowStation =  rowStation.values[0]
+            path.append({
+                'city': rowStation[3],
+                'station': rowStation[0],
+                'lat': rowStation[1],
+                'lng': rowStation[2]
+            })
     return path
 
 

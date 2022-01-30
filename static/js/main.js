@@ -64,11 +64,20 @@ function resetPage() {
     $("#route-list li").remove();
 }
 
+function resetErrors() {
+    $(".error").html("");
+}
+
 function createRouteList(route) {
     for (var i = 0; i < route.length; i++) {
         const mainStation = (i == 0 || i == route.length - 1)
         addRouteOnList(route[i]["station"], mainStation);
     }
+}
+
+function addError(error) {
+    resetErrors();
+    $('.error').append(error);
 }
 
 function addRouteOnList(station, mainStation) {
@@ -85,6 +94,11 @@ function addRouteOnList(station, mainStation) {
     ul.appendChild(li);
 }
 
+function setSpamSatus(actionUrl) {
+    const spamStatus = $('#spam-filter-checkbox').is(':checked');
+    return actionUrl + "?spam_filter=" + spamStatus;
+}
+
 function submitHandler(form, actionUrl) {
     $.ajax({
         type: "POST",
@@ -93,7 +107,11 @@ function submitHandler(form, actionUrl) {
         success: function(data) {
             data = JSON.parse(data);
             resetPage();
-            initMap(data[0]);
+            if(data.error) {
+                addError(data.error);
+            } else {
+                initMap(data[0]);
+            }
         }
     });
 }
@@ -116,7 +134,11 @@ function submitFileHandler(form, actionUrl) {
         success: function(data) {
             data = JSON.parse(data);
             resetPage();
-            initMap(data[0]);
+            if(data.error) {
+                addError(data.error);
+            } else {
+                initMap(data[0]);
+            }
         }
     });
 }
@@ -126,8 +148,9 @@ $(document).ready(function() {
     $("#search-form").submit(function(e) {
         e.preventDefault();
         var form = $(this);
-        var actionUrl = form.attr('action');
+        actionUrl = setSpamSatus(form.attr('action'));
 
+        resetErrors()
         submitHandler(form, actionUrl);
     });
 
@@ -135,8 +158,9 @@ $(document).ready(function() {
     $("#mic-form").submit(function(e) {
         e.preventDefault();
         var form = $(this);
-        var actionUrl = form.attr('action');
+        actionUrl = setSpamSatus(form.attr('action'));
 
+        resetErrors()
         submitHandler(form, actionUrl);
     });
 
@@ -144,8 +168,9 @@ $(document).ready(function() {
     $("#upload-form").submit(function(e) {
         e.preventDefault();
         var form = $(this);
-        var actionUrl = form.attr('action');
+        actionUrl = setSpamSatus(form.attr('action'));
 
+        resetErrors()
         submitFileHandler(form, actionUrl);
     });
 });

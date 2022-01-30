@@ -18,18 +18,16 @@ def sttFile():
     transcript = ""
     if request.method == "POST":
         print("File transalation request")
-        print(request)
-        print(request.files)
 
         if "file" not in request.files:
-            return render_template('home.html', error="Aucun fichier n'a été envoyé.")
+            return json.dumps({"error": "Aucun fichier n'a été envoyé."})
 
         file = request.files["file"]
         if file.filename == "":
-            return render_template('home.html', error="Le fichier envoyé est invalide.")
+            return json.dumps({"error": "Le fichier envoyé est invalide."})
 
         if not file.filename.endswith(('.wav', '.aif', '.aiff', '.flac')):
-            return render_template('home.html', error="Le fichier audio doit être au format .wav, .aif, .aiff ou .flac.")
+            return json.dumps({"error": "Le fichier audio doit être au format .wav, .aif, .aiff ou .flac."})
 
         if file:
             print("filename : "+file.filename)
@@ -40,13 +38,16 @@ def sttFile():
                 data = recognizer.record(source)
             transcript = recognizer.recognize_google(data, language='fr-FR', key=None)
 
-        return process_render(transcript)
+        spam_filter_status = request.args["spam_filter"] == "true" if "spam_filter" in request.args else False
+
+        return process_render(transcript, spam_filter_status)
 
 
 @app.route("/sttMic",methods=["GET", "POST"])
 def sttMic():
 
     transcript = ""
+    print(request.get_json())
     if request.method == "POST":
         print("Mic transalation request")
 
@@ -57,24 +58,29 @@ def sttMic():
             print("We are listen you can speak")
             recognizer.adjust_for_ambient_noise(source, duration=0.5) 
             audio = recognizer.listen(source)
-        transcript = recognizer.recognize_google(audio, language='fr-FR', key=None)  
+        transcript = recognizer.recognize_google(audio, language='fr-FR', key=None)
+
+        spam_filter_status = request.args["spam_filter"] == "true" if "spam_filter" in request.args else False
 
         print("res : "+transcript.strip())
-        return process_render(transcript)
+        return process_render(transcript, spam_filter_status)
 
 
 @app.route("/result",methods=["GET", "POST"])
 def result():
     userText = "Initialization"
     userText = request.form["doc"].strip()
-    return process_render(userText)
+    spam_filter_status = request.args["spam_filter"] == "true" if "spam_filter" in request.args else False
+    return process_render(userText, spam_filter_status)
 
 
-def process_render(doc):
-    if (process_spam_filter(doc)):
-        return {"error": "La recherche n'est pas valide."}
+def process_render(doc, spam_filter_status):
+    if (doc == "" or (spam_filter_status and process_spam_filter(doc))):
+        return json.dumps({"error": "La recherche n'est pas valide."})
 
     cities = process_input(doc)
-    route = process_path_finding(cities[0], cities[1])
+    if not cities:
+        return json.dumps({"error": "Aucun itinéraire n'a été trouvé."})
 
+    route = process_path_finding(cities[0], cities[1])
     return json.dumps(route)

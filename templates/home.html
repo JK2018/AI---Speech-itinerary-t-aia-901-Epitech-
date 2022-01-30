@@ -18,9 +18,14 @@
       <input type="text" class="main-input" name="doc" placeholder="Où allez-vous ?">
       <button class="submit-btn" type="submit">Trouver un trajet</button>
     </form>
-    <div class="error">
-      {% if error != "" %}{{error}}{% endif %}
+    <div class="spam-toggle">
+      <label class="switch">
+        <input id="spam-filter-checkbox" type="checkbox" checked>
+        <span class="slider round"></span>
+      </label>
+      <label>Activer le spam filter</label>
     </div>
+    <div class="error"></div>
     <div class="loader">
       <form id="mic-form" action="http://localhost:8000/sttMic" method="post" enctype="multipart/form-data">
         <button type="submit" class="secondary-btn" id="sendMic" onclick="onMic()">
